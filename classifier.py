@@ -22,22 +22,40 @@ class clastorizer:
 
         self.num_classes = 4
         self.kmeans = KMeans(n_clusters=self.num_classes, random_state=52)
-        self.df_idf_mat = None
+    def fit_tf_idf(self, dataset = None):
+        '''
+        fit tf_idf with dataset.
+        обучаем tf_idf и далее используем
+        '''
+        self.tf_idf.fit(dataset)
+        
 
-    def get_categories(self, data: tp.List[str] | tp.Set[str]) -> tp.List[tp.Tuple[float, str]]:
+   
+
+    def get_categories(self, data: tp.List[str] | tp.Set[str], refit = False, add_to_data = False) -> tp.Tuple[tp.List[str], tp.List[float]]:
         '''
         input: get list of documents(List(str))
-        return: return list of scores for each word for each document
-        TODO: сейчас плохо работает: каждый раз сохроняем все полученные документы вместо хранения IDF. 
-            мейби нужно обучать на какой то обучающей выборке а потом уже использовать ?
+            refit - Если хотим переобучить модель на self.data
+            add_to_data - если хотим добавлять данные;
+        return: 
+            features - names of features,
+            scores - value of each feature;
         '''
-        self.data |= set(data)
-        self.tf_idf_mat = self.tf_idf.fit_transform(self.data)
-        # нормолизация матрицы мб долгая операция (спросить у попкова)
-        features = self.tf_idf.get_feature_names_out()
-        scores = self.tf_idf_mat.toarray()
+        if add_to_data:
+            self.data |= set(data)
+            data = self.data
 
-        return [self._get_scorc_feature(features, scores[-i-1]) for i in range(len(data)-1, -1, -1)]
+        if refit:
+            tf_idf_mat = self.tf_idf.fit_transform(data)
+        else:
+            tf_idf_mat = self.tf_idf.transform(data)
+
+
+        features = self.tf_idf.get_feature_names_out()
+        scores = tf_idf_mat.toarray()
+
+        return features, scores
+
 
     def clastorize(self, data):
         cat = self.get_categories(data)
@@ -50,12 +68,6 @@ class clastorizer:
             for idx in cl:
                 print(data[idx])
 
-    def fit(self, data):
-        self.tf_idf.fit(data)
-
-    def _get_scorc_feature(self, features, scores):
-        return sorted(zip((scores.tolist()), features), reverse=True)
-
 
 if __name__ == "__main__":
     pred_data = [
@@ -65,10 +77,10 @@ if __name__ == "__main__":
         "Ебля с tf-idf тоже связана с машинным обучением агентов."
     ]
     cl = clastorizer()
-    # print(cl.get_categories(pred_data))
+    print(cl.get_categories(pred_data, True, True))
     new_data = ['трахать и дрочить очень хорошо',
                 'дрочить плохо трахать неплохо',
                 'Трахать очень плохо, а дрочить хорошо )',
                 'И трахать и дрочить очень сильно плохо (']
-    # n_cl = cl.get_categories(new_data)
-    cl.clastorize(pred_data + new_data)
+    print(cl.get_categories(pred_data, True, True))
+    #cl.clastorize(pred_data + new_data)
