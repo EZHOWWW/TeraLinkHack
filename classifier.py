@@ -1,12 +1,12 @@
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.svm import LinearSVC
-from sklearn.pipeline import Pipeline
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, classification_report
-from sklearn.preprocessing import normalize
-from sklearn.cluster import KMeans
-import numpy as np
+import string
 import typing as tp
+
+import nltk
+import numpy as np
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from sklearn.cluster import KMeans
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 NGRAM_RANGE = (1, 1)
 MAX_FEATURES = 128
@@ -24,6 +24,15 @@ class clastorizer:
 
         self.num_classes = 3
         self.kmeans = KMeans(n_clusters=self.num_classes, random_state=52)
+
+        self._init_nltk()
+
+    def _init_nltk(self):
+        nltk.download('stopwords')
+        nltk.download('punkt')
+        stop_words = set(stopwords.words('russian'))
+        punctuation = set(string.punctuation)
+
     def fit_tf_idf(self, dataset = None):
         '''
         fit tf_idf with dataset.
@@ -95,17 +104,7 @@ dada = ['финансы деньги ляля.',
 "Отчет по хакатон хакатон",
 "Хакатон: сасать америка"]
 if __name__ == "__main__":
-    pred_data = [
-        "Машинное обучение - это интересная область.",
-        "Обучение с учителем - ключевой аспект машинного обучения.",
-        "Область NLP также связана с машинным обучением.",
-        "Ебля с tf-idf тоже связана с машинным обучением агентов."
-    ]
     cl = clastorizer()
-    new_data = ['трахать и дрочить очень хорошо',
-                'дрочить плохо трахать неплохо',
-                'Трахать очень плохо, а дрочить хорошо )',
-                'И трахать и дрочить очень сильно плохо (']
     z = cl._zip_scor_feat(*cl.get_categories(dada, True, True))
     for i in z:
         print(i, '\n')
