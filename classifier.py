@@ -1,10 +1,10 @@
 import string
 import typing as tp
 
-import nltk
+#import nltk
 import numpy as np
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
+#from nltk.corpus import stopwords
+#from nltk.tokenize import word_tokenize
 from sklearn.cluster import KMeans
 from sklearn.feature_extraction.text import TfidfVectorizer
 
@@ -18,20 +18,21 @@ class clastorizer:
     def __init__(self):
         self.tf_idf = TfidfVectorizer(
             ngram_range=NGRAM_RANGE, max_features=MAX_FEATURES)
-        self.pipeline = Pipeline(
-            [self.tf_idf])
         self.data: tp.List[Document] = [] 
 
         self.num_classes = 3
         self.kmeans = KMeans(n_clusters=self.num_classes, random_state=52)
 
-        self._init_nltk()
 
     def _init_nltk(self):
         nltk.download('stopwords')
         nltk.download('punkt')
-        stop_words = set(stopwords.words('russian'))
-        punctuation = set(string.punctuation)
+        self.stop_words = set(stopwords.words('russian'))
+        self.punctuation = set(string.punctuation)
+
+    def preprocessing(self, data:tp.List[Document]):
+        pass
+
 
     def fit_tf_idf(self, dataset = None):
         '''
