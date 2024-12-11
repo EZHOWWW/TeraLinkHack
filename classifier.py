@@ -1,10 +1,11 @@
 import string
 import typing as tp
 
-#import nltk
+import nltk
 import numpy as np
-#from nltk.corpus import stopwords
-#from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem.snowball import SnowballStemmer 
 from sklearn.cluster import KMeans
 from sklearn.feature_extraction.text import TfidfVectorizer
 
@@ -15,7 +16,8 @@ MAX_FEATURES = 128
 Document = str 
 
 class clastorizer:
-    def __init__(self):
+    def __init__(self, language='russian'):
+        self.language = language
         self.tf_idf = TfidfVectorizer(
             ngram_range=NGRAM_RANGE, max_features=MAX_FEATURES)
         self.data: tp.List[Document] = [] 
@@ -23,18 +25,33 @@ class clastorizer:
         self.num_classes = 3
         self.kmeans = KMeans(n_clusters=self.num_classes, random_state=52)
 
+        self._init_nltk()
+
 
     def _init_nltk(self):
         nltk.download('stopwords')
         nltk.download('punkt')
-        self.stop_words = set(stopwords.words('russian'))
+        nltk.download('punkt_tab')
+        self.stop_words = set(stopwords.words(self.language))
         self.punctuation = set(string.punctuation)
+        self.stemmer = SnowballStemmer(self.language)
 
-    def preprocessing(self, data:tp.List[Document]):
-        pass
+    def preprocessing(self, data:tp.List[Document])-> tp.List[Document]:
+        '''
+        preprocessing data
+        удаление союзов предлогов и т.п, приведение к нижнему регистру
+        '''
+        for i, v in enumerate(data):
+            words = word_tokenize(v.lower())  # Привести к нижнему регистру и токенизировать
+            filtered_words = [word for word in words if word not in self.stop_words and word not in self.punctuation]
+            stemmed_words = [self.stemmer.stem(word) for word in word_tokenize(' '.join(filtered_words))]
+            res = stemmed_words
+            data[i] = ' '.join(res)
+        return data
 
 
-    def fit_tf_idf(self, dataset = None):
+
+    def fit_etf_idf(self, dataset = None):
         '''
         fit tf_idf with dataset.
         обучаем tf_idf и далее используем
@@ -44,7 +61,7 @@ class clastorizer:
 
    
 
-    def get_categories(self, data: tp.List[Document] | tp.Set[Document], refit = False, add_to_data = False) -> tp.Tuple[tp.List[Document], tp.List[float]]:
+    def get_categories(self, data: tp.List[Document] | tp.Set[Document], refit = False, add_to_data = False, preprocess = True) -> tp.Tuple[tp.List[Document], tp.List[float]]:
         '''
         input: get list of documents(List(Document))
             refit - Если хотим переобучить модель на self.data
@@ -53,10 +70,14 @@ class clastorizer:
             features - names of features,
             scores - value of each feature;
         '''
+        if preprocess:
+            self.preprocessing(data)
+            print(data)
         if add_to_data:
             self.data += data
             data = self.data
 
+        
         if refit:
             tf_idf_mat = self.tf_idf.fit_transform(data)
         else:
@@ -93,7 +114,8 @@ class clastorizer:
 dada = ['финансы деньги ляля.',
 'деньги мало бебе, хер.',
 'финансы очень плохо но похуй.',
-'окей и пох финансы хуй деньи.',
+'окей и пох финансы хуй деньги.',
+"Деньгами финансам не поможешь",
 
 "Отчет не сделан да и хер с ним",
 "Надо сделать отчет по алгосам",
@@ -103,8 +125,9 @@ dada = ['финансы деньги ляля.',
 "Хакатон делаем хакатон",
 "выйграем деньги на хакатон",
 "Отчет по хакатон хакатон",
-"Хакатон: сасать америка"]
-if __name__ == "__main__":
+"хакатоны сасать америка"]
+
+if __name__ == '__main__':
     cl = clastorizer()
     z = cl._zip_scor_feat(*cl.get_categories(dada, True, True))
     for i in z:
