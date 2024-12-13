@@ -26,20 +26,14 @@ class Document:
         return self.text
 
     @classmethod
-    def parse_json(cls, file):
-        # TODO : переделать
+    def parse_json(cls, file: str):
         with open(file, "r") as f:
             data = json.load(f)
-        res = Document(
-            text=data["text"],
-            name=data["name"],
-            preprocessed_text=data["preprocessed_text"],
-            metadata=data["metadata"],
-        )
+        res = Document(**data)
         return res
 
     @classmethod
-    def to_json(cls, doc, file):
+    def to_json(cls, doc, file: str):
         if doc.name == "":
             doc.name = file[: file.find(".")]
         with open(file, "w") as f:
