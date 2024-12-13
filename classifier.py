@@ -12,20 +12,26 @@ from document import Document
 
 NGRAM_RANGE = (1, 1)
 MAX_FEATURES = 128
+NUM_CLASSTERS = 3
+CLASSES = ['Отчеты', 'Договоры', 'Акты', 'Приказы']
 
 
-class clastorizer:
-    def __init__(self, language="russian"):
+class Clastorizer:
+    def __init__(self, ngram_range=NGRAM_RANGE, max_features=MAX_FEATURES, num_classters=NUM_CLASSTERS, classes=CLASSES, language="russian"):
         self.language = language
         self.tf_idf = TfidfVectorizer(
-            ngram_range=NGRAM_RANGE, max_features=MAX_FEATURES
+            ngram_range=ngram_range, max_features=max_features
         )
         self.data: tp.List[Document] = []
 
-        self.num_classes = 3
-        self.kmeans = KMeans(n_clusters=self.num_classes, random_state=52)
+        self.num_classters = 3
+        self.kmeans = KMeans(n_clusters=self.num_classters, random_state=52)
 
         self._init_nltk()
+
+        self.classes = classes
+        self.prep_classes = [self.stemmer.stem(i.lower())
+                             for i in self.classes]
 
     def _init_nltk(self):
         nltk.download("stopwords")
@@ -124,10 +130,27 @@ class clastorizer:
 
         return vec.get_feature_names_out()[ind]
 
-    def _zip_scor_feat(self, features, scores):
+    def _zip_scor_feat(self, scores, features):
         res = []
         for i in scores:
             res.append(sorted(zip(i.tolist(), features), reverse=True))
+        return res
+
+    def classify(self, data: tp.List[Document], refit=False,
+                 add_to_data=False,
+                 preprocess=True,
+                 ) -> tp.List[str]:
+        '''Классифицируем через tf-idf, просто ищем наибольшее значение среди self.classes'''
+        features, scores = self.get_categories(
+            data, refit=refit, add_to_data=add_to_data, preprocess=preprocess)
+        res = []
+        max_val = 0
+        clas = ''
+        for i in self._zip_scor_feat(scores, features):
+            for s, f in i:
+                if s >= max_val and f in self.prep_classes:
+                    max_val, clas = s, f
+            res.append(clas)
         return res
 
 
@@ -156,13 +179,23 @@ dada = to_docs(
     ]
 )
 
+dat2 = to_docs([
+    'Отчет: лфывалдфываждофывждарфыждвпр фждыоварфыджов фдыпрждофырав фждыова рждфыоап дофыардр',
+    'Отчет: фдыова дофыарв дрфывджа фыджоар вфоырва д',
+    'договоры: фываолф джфывола ждлфыов афдылоа ',
+    'договоры фыждвао джфылова ждфыова фыджвоа договры джфылоав',
+    'акт 1 фджылав ждфылвоа фыжвд аложфдылво афдылвоа акт 2',
+])
 
 if __name__ == "__main__":
-    cl = clastorizer()
+    cl = Clastorizer()
+    print(cl.classify(dat2, True, True))
+    '''
     z = cl._zip_scor_feat(*cl.get_categories(dada, True, True))
     claDocuments = cl.clastorize(dada, True)
-    for i in range(cl.num_classes):
+    for i in range(cl.num_classters):
         print(cl.get_docs_in_classter(i), "\n")
         print(cl.get_word_of_classter(i), "\n")
+    '''
 
     # cl.clastorize(pred_data + new_data)
