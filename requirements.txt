@@ -1,0 +1,8 @@
+
+# clusterizer
+numpy>=2.0.0
+scikit-learn>=1.6.0
+nltk>=3.9.1
+gensim>=4.3.3
+torch>=2.4.1
+transformers>=4.43.0
