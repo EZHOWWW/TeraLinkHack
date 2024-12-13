@@ -15,6 +15,7 @@ class Document:
     text: str
     name: str = ""
     preprocessed_text: str = ""
+    sum: str = ""
 
     metadata: dict[str, str | int | list[str]] = field(default_factory=dict)
 
