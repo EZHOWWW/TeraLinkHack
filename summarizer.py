@@ -11,12 +11,15 @@ class Summarizer:
     def __init__(self, model:str, tokenizer: str | None = None):
         self.pipe = transformers.pipeline('summarization', model=model)
 
-    def sum(self, data:list[Document], save_sum = False)->list[Document]:
+    def sum_list(self, data:list[Document], save_sum = False)->list[str]:
         res = []
         for i in data:
-            s = self.pipe(i.text)
-            if save_sum:
-                i.sum = s
-            res.append(s)
+            res.append(self.sum(i, save_sum))
         return res
+
+    def sum(self, doc:Document, save_sum = False) -> str:
+        s = self.pipe(doc.text)
+        if save_sum:
+            i.sum = s
+        return s
  
