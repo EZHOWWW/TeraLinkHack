@@ -22,11 +22,6 @@ class ModelConfig(BaseModel):
     pass
 
 
-class RunConfig(BaseModel):
-    host: str = "0.0.0.0"
-    port: int = 8000
-
-
 class Api(BaseModel):
     tag: str = "OCR"
     prefix: str = "/ocr"
@@ -34,7 +29,6 @@ class Api(BaseModel):
 
 class Settings(BaseSettings):
     model_config = ModelConfig()
-    run: RunConfig = RunConfig()
     logging: LoggingConfig = LoggingConfig()
     api: Api = Api()
 
