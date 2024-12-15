@@ -1,6 +1,9 @@
+__all__ = (
+    'app',
+)
+
 import logging
 
-import uvicorn
 from fastapi import FastAPI
 
 from app.classifier import router as classifier_router
@@ -23,11 +26,3 @@ app.include_router(ocr_router)
 app.include_router(sap_router)
 app.include_router(classifier_router)
 app.include_router(summarizer_router)
-
-if __name__ == '__main__':
-    uvicorn.run(
-        "__main__:app",
-        host=settings.run.host,
-        port=settings.run.port,
-        reload=True,
-    )
