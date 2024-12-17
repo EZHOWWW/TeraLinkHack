@@ -1,15 +1,18 @@
+import os.path
+
+from pydantic import BaseModel
+
 from dataclasses import dataclass, field, asdict
 import json
-import types as tp
 
 
 @dataclass(order=False, eq=False, repr=False)
-class Document:
+class Document():
     """
     class Document
-    все модули меняют меняют поле text,
+    все модули меняют поле text,
     preprocessed_text нужен для классификатора (нужно хранить и то и то) (mb тоже в метадата ?),
-    в metadata будем хранить некотые теги для микросервисов (например тег : договор).
+    в metadata будем хранить некоторые теги для микросервисов (например тег : договор).
     """
 
     text: str
@@ -35,6 +38,9 @@ class Document:
     @classmethod
     def to_json(cls, doc, file: str):
         if doc.name == "":
-            doc.name = file[: file.find(".")]
+            doc.name = file[:file.find(".")]
         with open(file, "w") as f:
             json.dump(asdict(doc), f)
+
+
+EXAMPLE = Document.parse_json(os.getcwd() + "\\app\core\example.json")
