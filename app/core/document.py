@@ -1,13 +1,11 @@
 import os.path
 
-from pydantic import BaseModel
-
 from dataclasses import dataclass, field, asdict
 import json
 
 
 @dataclass(order=False, eq=False, repr=False)
-class Document():
+class Document:
     """
     class Document
     все модули меняют поле text,

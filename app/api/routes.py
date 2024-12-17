@@ -15,10 +15,11 @@ router = APIRouter(
 
 @router.get("/download")
 def download_result():
-    return FileResponse(os.path.join(os.getcwd(), "Analyzed_doc.json"), filename='Analyzed_doc.json', media_type="application/json")
+    return FileResponse(os.path.join(os.getcwd(), "Analyzed_doc.json"), filename='Analyzed_doc.json',
+                        media_type="application/json")
 
 
 @router.post("/process_all")
-def process_document(file: UploadFile) -> FileResponse:
+def process_document(file: UploadFile):
     document = application.process_document(file)
     Document.to_json(document, "Analyzed_doc.json")
